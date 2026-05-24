@@ -1,0 +1,332 @@
+# AION — FULL SaaS PRODUCT MASTER PROMPT
+
+## Product Overview
+
+AION is an AI-powered all-in-one business operations SaaS platform for small service businesses.
+
+The platform combines:
+- Appointment booking
+- Employee management
+- CRM
+- AI lead follow-up
+- Scheduling
+- Payroll tracking
+- Review management
+- Analytics
+- Automations
+
+Into one unified modern platform.
+
+---
+
+# Vision
+
+AION helps small businesses:
+- save time,
+- automate repetitive tasks,
+- reduce operational stress,
+- improve customer retention,
+- and increase revenue.
+
+The platform should feel:
+- premium,
+- modern,
+- minimal,
+- mobile-first,
+- AI-assisted,
+- beginner-friendly.
+
+Inspired by:
+- Linear
+- Stripe
+- Notion
+- Framer
+- Vercel
+
+---
+
+# Target Market
+
+Initial niches:
+- Barbershops
+- Salons
+- Gyms
+- Cleaning companies
+- Clinics
+
+Expansion target:
+- All local service businesses.
+
+---
+
+# Core Product Features
+
+## 1. Authentication System
+
+### Features
+- Email/password authentication
+- Google OAuth
+- Magic links
+- Forgot password
+- Multi-tenant architecture
+- Role-based permissions
+
+### User Roles
+- Owner
+- Manager
+- Employee
+
+---
+
+## 2. Dashboard
+
+### Widgets
+- Total bookings
+- Revenue
+- New leads
+- Employee attendance
+- No-shows
+- Customer retention
+- AI insights
+- Upcoming appointments
+- Tasks
+
+### Requirements
+- Real-time updates
+- Interactive charts
+- Quick actions
+- AI assistant panel
+
+---
+
+## 3. Appointment Booking System
+
+### Features
+- Calendar management
+- Drag-and-drop scheduling
+- Recurring appointments
+- Public booking page
+- Automated reminders
+- SMS/email confirmations
+- Employee assignment
+- Buffer times
+- Cancellation handling
+
+### Integrations
+- Google Calendar
+- Outlook Calendar
+
+---
+
+## 4. Employee Management
+
+### Features
+- Scheduling
+- Shift management
+- Attendance tracking
+- Time tracking
+- Payroll hours
+- Vacation requests
+- Employee notes
+- Performance tracking
+
+### Employee Actions
+- Clock in/out
+- View schedules
+- Request time off
+
+### Manager Actions
+- Approve shifts
+- Edit schedules
+- Monitor attendance
+
+---
+
+## 5. CRM System
+
+### Features
+- Customer profiles
+- Notes
+- Booking history
+- Spending history
+- Customer tags
+- Lead pipeline
+- Follow-up status
+- Segmentation
+
+### AI Features
+- AI-generated customer insights
+
+---
+
+## 6. AI Automation Engine
+
+This is the primary product differentiator.
+
+### Features
+- AI lead replies
+- AI booking assistant
+- AI customer follow-up
+- AI review requests
+- AI no-show recovery
+- AI upsell suggestions
+
+### Example Workflow
+If a customer misses an appointment:
+- AI automatically sends a personalized rebooking message.
+
+### Architecture
+- OpenAI abstraction layer
+- Prompt templates
+- Automation workflow engine
+
+---
+
+## 7. Review Management
+
+### Features
+- Automatic review requests
+- Google review integration
+- Review monitoring
+- Negative feedback filtering
+- Review analytics
+
+---
+
+## 8. Payments & Billing
+
+### Features
+- Stripe subscriptions
+- Monthly plans
+- Annual plans
+- Usage-based billing
+- Invoices
+- Failed payment handling
+
+### Pricing Plans
+- Starter
+- Pro
+- Business
+
+---
+
+## 9. Analytics
+
+### Metrics
+- Revenue trends
+- Retention rate
+- Booking trends
+- Employee productivity
+- Lead conversion
+- AI performance metrics
+
+### Requirements
+- Interactive charts
+- Exportable reports
+
+---
+
+## 10. Notifications
+
+### Channels
+- Email
+- SMS
+- In-app notifications
+- Push notifications
+
+---
+
+## 11. Mobile Experience
+
+### Requirements
+- Fully responsive
+- Mobile-first
+- App-like UX
+- Fast loading
+- Smooth animations
+- Bottom navigation on mobile
+
+---
+
+# Recommended Tech Stack
+
+## Frontend
+- Next.js
+- React
+- TypeScript
+- TailwindCSS
+- Framer Motion
+- shadcn/ui
+
+## Backend
+- Node.js
+- NestJS or Express
+
+## Database
+- PostgreSQL
+
+## ORM
+- Prisma
+
+## Authentication
+- Clerk or Auth.js
+
+## Payments
+- Stripe
+
+## AI
+- OpenAI API abstraction layer
+
+## Infrastructure
+- Vercel
+- Supabase
+- AWS S3
+
+## Realtime
+- WebSockets or Supabase Realtime
+
+## State Management
+- Zustand
+- React Query
+
+---
+
+# System Architecture
+
+## Architectural Principles
+- Modular codebase
+- Scalable microservice-ready design
+- Reusable components
+- Clean separation of concerns
+- Production-ready patterns
+
+## Layers
+- API Layer
+- Service Layer
+- Repository Layer
+- Validation Layer
+- Middleware Layer
+- RBAC Layer
+- Audit Logging
+
+---
+
+# Suggested Folder Structure
+
+```txt
+/apps
+  /web
+  /api
+
+/packages
+  /ui
+  /types
+  /config
+  /utils
+
+/prisma
+  schema.prisma
+
+/docs
+
+/scripts

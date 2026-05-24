@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "declaration": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "baseUrl": ".",
+    "paths": {
+      "@aion/module-kit": ["packages/module-kit/src/index.ts"],
+      "@aion/types": ["packages/types/src/index.ts"],
+      "@aion/config": ["packages/config/src/index.ts"],
+      "@aion/utils": ["packages/utils/src/index.ts"],
+      "@aion/ui": ["packages/ui/src/index.ts"]
+    }
+  }
+}

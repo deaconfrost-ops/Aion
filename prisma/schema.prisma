@@ -1,0 +1,241 @@
+// AION database schema.
+//
+// Conventions (see ARCHITECTURE.md §4):
+//  • Every tenant-scoped model carries `tenantId`; the Prisma middleware injects
+//    it automatically — never hand-write a tenant filter.
+//  • Tables are module-namespaced by prefix so ownership is obvious and a module
+//    can later be extracted: inv_ prov_ sched_ res_ crm_ hr_ rest_ …
+//  • Global (non-tenant) models — Tenant, User, PayrollRuleset — are listed in
+//    GLOBAL_MODELS in apps/api/src/common/prisma.service.ts.
+//
+// This file scaffolds the Phase 1–2 slice (tenancy + restaurant). Other modules
+// add their models under their own prefix as they're built.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────── GLOBAL / CORE ───────────────────────────
+
+enum Niche {
+  restaurant
+  salon
+  gym
+  cleaning
+  clinic
+  food_broker
+}
+
+enum Role {
+  owner
+  manager
+  employee
+}
+
+model Tenant {
+  id           String       @id @default(cuid())
+  name         String
+  niche        Niche
+  entitlements String[]     @default([]) // billing → which modules may enable
+  createdAt    DateTime     @default(now())
+  memberships  Membership[]
+}
+
+model User {
+  id          String       @id @default(cuid())
+  email       String       @unique
+  name        String?
+  createdAt   DateTime     @default(now())
+  memberships Membership[]
+}
+
+model Membership {
+  id       String @id @default(cuid())
+  tenantId String
+  userId   String
+  role     Role   @default(employee)
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+  user     User   @relation(fields: [userId], references: [id])
+
+  @@unique([tenantId, userId])
+  @@map("core_membership")
+}
+
+/// Dated, versioned payroll/tax rules (e.g. Quebec QPP/QPIP/EI/income tax).
+/// Global + jurisdiction-keyed; payroll runs pick the row effective on the pay date.
+model PayrollRuleset {
+  id            String   @id @default(cuid())
+  jurisdiction  String // 'CA-QC'
+  effectiveFrom DateTime
+  rules         Json // serialized rate table; never hard-coded in app code
+  createdAt     DateTime @default(now())
+
+  @@unique([jurisdiction, effectiveFrom])
+  @@map("hr_payroll_ruleset")
+}
+
+// ─────────────────────── SHARED: inventory (inv_) ─────────────────────
+
+model InvItem {
+  id           String         @id @default(cuid())
+  tenantId     String
+  name         String
+  unit         String // 'g', 'ml', 'each'
+  unitCostCents Int           @default(0) // money in minor units
+  onHand       Float          @default(0)
+  reorderPoint Float          @default(0)
+  moves        InvStockMove[]
+  recipeLines  RestRecipeLine[]
+  suppliers    ProvItemSupplier[]
+  createdAt    DateTime       @default(now())
+
+  @@index([tenantId])
+  @@map("inv_item")
+}
+
+model InvStockMove {
+  id        String   @id @default(cuid())
+  tenantId  String
+  itemId    String
+  delta     Float // signed
+  reason    String // 'sale', 'receive', 'adjust'
+  createdAt DateTime @default(now())
+  item      InvItem  @relation(fields: [itemId], references: [id])
+
+  @@index([tenantId])
+  @@map("inv_stock_move")
+}
+
+// ─────────────────────── SHARED: providers (prov_) ────────────────────
+
+model ProvSupplier {
+  id        String              @id @default(cuid())
+  tenantId  String
+  name      String
+  email     String?
+  phone     String?
+  items     ProvItemSupplier[]
+  pos       ProvPurchaseOrder[]
+  createdAt DateTime            @default(now())
+
+  @@index([tenantId])
+  @@map("prov_supplier")
+}
+
+/// Which supplier supplies which inventory item, at what price/lead time.
+/// `preferred` drives the auto-PO when stock goes low.
+model ProvItemSupplier {
+  id            String       @id @default(cuid())
+  tenantId      String
+  supplierId    String
+  itemId        String
+  preferred     Boolean      @default(false)
+  priceCents    Int          @default(0)
+  leadTimeDays  Int          @default(0)
+  supplier      ProvSupplier @relation(fields: [supplierId], references: [id])
+  item          InvItem      @relation(fields: [itemId], references: [id])
+
+  @@unique([supplierId, itemId])
+  @@index([tenantId])
+  @@map("prov_item_supplier")
+}
+
+enum PurchaseOrderStatus {
+  draft
+  approved
+  received
+  cancelled
+}
+
+model ProvPurchaseOrder {
+  id         String                  @id @default(cuid())
+  tenantId   String
+  supplierId String
+  status     PurchaseOrderStatus     @default(draft)
+  lines      ProvPurchaseOrderLine[]
+  supplier   ProvSupplier            @relation(fields: [supplierId], references: [id])
+  createdAt  DateTime                @default(now())
+
+  @@index([tenantId])
+  @@map("prov_purchase_order")
+}
+
+model ProvPurchaseOrderLine {
+  id         String            @id @default(cuid())
+  tenantId   String
+  poId       String
+  itemId     String
+  quantity   Float
+  priceCents Int               @default(0)
+  po         ProvPurchaseOrder @relation(fields: [poId], references: [id])
+
+  @@index([tenantId])
+  @@map("prov_purchase_order_line")
+}
+
+// ─────────────────────── NICHE: restaurant (rest_) ────────────────────
+
+model RestMenuItem {
+  id         String           @id @default(cuid())
+  tenantId   String
+  name       String // 'Margherita'
+  priceCents Int              @default(0)
+  recipe     RestRecipeLine[]
+  orderLines RestOrderLine[]
+  createdAt  DateTime         @default(now())
+
+  @@index([tenantId])
+  @@map("rest_menu_item")
+}
+
+/// Bill of Materials: how much of an inventory item one menu item consumes.
+/// This is the restaurant-only link into shared inventory.
+model RestRecipeLine {
+  id         String       @id @default(cuid())
+  tenantId   String
+  menuItemId String
+  itemId     String // → InvItem
+  quantity   Float // in the inventory item's unit
+  menuItem   RestMenuItem @relation(fields: [menuItemId], references: [id])
+  item       InvItem      @relation(fields: [itemId], references: [id])
+
+  @@unique([menuItemId, itemId])
+  @@index([tenantId])
+  @@map("rest_recipe_line")
+}
+
+enum OrderType {
+  dine_in
+  takeout
+  delivery
+}
+
+model RestOrder {
+  id         String          @id @default(cuid())
+  tenantId   String
+  type       OrderType
+  totalCents Int             @default(0)
+  lines      RestOrderLine[]
+  createdAt  DateTime        @default(now())
+
+  @@index([tenantId])
+  @@map("rest_order")
+}
+
+model RestOrderLine {
+  id         String       @id @default(cuid())
+  tenantId   String
+  orderId    String
+  menuItemId String
+  count      Int
+  order      RestOrder    @relation(fields: [orderId], references: [id])
+  menuItem   RestMenuItem @relation(fields: [menuItemId], references: [id])
+
+  @@index([tenantId])
+  @@map("rest_order_line")
+}
